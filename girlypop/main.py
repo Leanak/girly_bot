@@ -14,7 +14,7 @@ from girlypop.bot import GirlypopBot
 from girlypop.config import load_config
 from girlypop.core import build_core
 from girlypop.db import init_db
-from girlypop.integrations import AppleCalendar, Calendars, IcsCalendar, NotionNotes
+from girlypop.integrations import AppleCalendar, Calendars, GoogleCalendar, IcsCalendar, NotionNotes
 from girlypop.integrations.ics_calendar import parse_feeds
 from girlypop.scheduler import build_scheduler
 
@@ -38,7 +38,10 @@ async def main() -> None:
         )
     feeds = parse_feeds(config.ics_calendars)  # Google Agenda & co, en lecture seule
     ics = IcsCalendar(feeds, config.timezone) if feeds else None
-    calendar = Calendars(apple, ics) if (apple or ics) else None
+    google = None
+    if config.google_enabled:  # Google par l'API : lecture + écriture (après `python -m girlypop.google_login`)
+        google = GoogleCalendar(config.google_token_file, config.timezone, config.google_write_calendar)
+    calendar = Calendars(apple, ics, google) if (apple or ics or google) else None
     notion = NotionNotes(config.notion_token, config.notion_parent_page_id) if config.notion_enabled else None
     log.info("📅 Calendriers : %s", calendar.describe() if calendar else "aucun configuré")
     log.info("📚 Notion : %s", "branché" if notion else "non configuré")

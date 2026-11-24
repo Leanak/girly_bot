@@ -15,5 +15,8 @@ caldav>=3.0,<4
 icalendar>=6.0
 # Google Agenda & co : déplie les événements répétés (« tous les mardis ») d'un fichier .ics
 recurring-ical-events>=3.0,<4
+# Google Agenda (lecture + écriture) : l'API officielle de Google et la connexion OAuth
+google-api-python-client>=2.100,<3
+google-auth-oauthlib>=1.2,<2
 # Notion : le client Python de l'API Notion (projet communautaire très utilisé)
 notion-client>=2.2,<4

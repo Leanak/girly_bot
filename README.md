@@ -100,7 +100,7 @@ girly_bot/
 
 | Rôle | Ce qu'elle fait | À brancher |
 |---|---|---|
-| ⏳ **Assistante de temps** | Organise tes journées et tes semaines selon tes objectifs, autour de tes événements Apple | Calendrier Apple ([étape 1 bis](docs/ROADMAP.md#étape-1-bis--brancher-le-calendrier-apple)) et/ou Google Agenda ([étape 1 quater](docs/ROADMAP.md#étape-1-quater--brancher-google-agenda-lecture-seule)) |
+| ⏳ **Assistante de temps** | Organise tes journées et tes semaines selon tes objectifs, autour de tes événements Apple | Calendrier Apple ([étape 1 bis](docs/ROADMAP.md#étape-1-bis--brancher-le-calendrier-apple)) et/ou Google Agenda ([lecture seule, 1 quater](docs/ROADMAP.md#étape-1-quater--brancher-google-agenda-lecture-seule) ou [lecture + écriture, 1 quinquies](docs/ROADMAP.md#étape-1-quinquies--google-agenda-en-lecture-et-écriture)) |
 | 💪 **Motivatrice** | Rappels avant tes tâches et événements, « on passe à la suite ? » en fin de tâche, petits boosts à 10:30, 14:30 et 17:00, bilan du soir | Rien (horaires réglables dans `.env`) |
 | 🎓 **Prof particulière** | Crée des fiches de cours dans ton Notion sur les sujets que tu lui donnes | Notion ([étape 1 ter](docs/ROADMAP.md#étape-1-ter--brancher-notion)) |
 

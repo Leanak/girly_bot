@@ -135,7 +135,7 @@ def test_calendar_tools_only_offered_when_configured(core):
     ex.run("get_calendar_events", {"first_day": "2026-11-24", "last_day": "2026-11-30"})
     ex.run("add_calendar_event", {"title": "Bio", "day": "2026-11-25", "start_time": "10:00", "duration_minutes": 45})
     assert calls[0] == (date(2026, 11, 24), date(2026, 11, 30))
-    assert calls[1] == ("Bio", date(2026, 11, 25), time(10, 0), 45, "")
+    assert calls[1] == ("Bio", date(2026, 11, 25), time(10, 0), 45, "", None)
 
 
 def test_calendar_tool_refused_when_not_configured(core):
@@ -234,7 +234,7 @@ def test_parse_feeds():
     assert parse_feeds("") == {}
 
 
-def test_google_only_means_no_write_tool(core):
+def test_ics_only_means_no_write_tool(core):
     from girlypop.integrations import Calendars
 
     google = Obj(list_events_for_days=lambda a, b: [{"title": "B", "start": "2026-11-25 10:00"}],
@@ -249,3 +249,32 @@ def test_google_only_means_no_write_tool(core):
     both = Calendars(apple=apple, ics=google)
     assert [e["title"] for e in both.list_events_for_days(date(2026, 11, 24), date(2026, 11, 30))] == ["A", "B"]
     assert both.can_write
+
+
+# --- Google Agenda par l'API (lecture + écriture) ---------------------------------------------
+
+def test_event_from_google_api():
+    from girlypop.integrations.google_calendar import event_from_google
+
+    timed = {"summary": "TD de chimie", "location": "Salle 12",
+             "start": {"dateTime": "2026-11-25T08:00:00Z"}, "end": {"dateTime": "2026-11-25T10:00:00Z"}}
+    d = event_from_google(timed, "Fac", PARIS)
+    assert (d["start"], d["end"], d["all_day"], d["calendar"]) == ("2026-11-25 09:00", "2026-11-25 11:00", False, "Fac")
+    all_day = {"summary": "Vacances", "start": {"date": "2026-12-20"}, "end": {"date": "2026-12-21"}}
+    assert event_from_google(all_day, "Perso", PARIS)["all_day"] is True
+
+
+def test_calendars_write_to_google_by_default_or_apple_on_request():
+    from girlypop.integrations import Calendars
+
+    written = []
+    def writer(name):
+        return Obj(create_event=lambda *a: written.append((name, a[0])) or {"calendar": name},
+                   list_events=lambda s, e: [], list_events_for_days=lambda a, b: [])
+
+    cals = Calendars(apple=writer("apple"), google=writer("google"))
+    cals.create_event("Yoga", date(2026, 11, 25), time(18, 0), 60)
+    cals.create_event("Lecture", date(2026, 11, 25), time(20, 0), 30, target="apple")
+    assert written == [("google", "Yoga"), ("apple", "Lecture")]
+    with pytest.raises(ValueError):
+        Calendars(ics=writer("ics")).create_event("X", date(2026, 11, 25), time(9, 0), 30)

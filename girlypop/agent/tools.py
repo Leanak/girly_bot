@@ -157,8 +157,9 @@ CALENDAR_TOOLS: list[dict[str, Any]] = [
     {
         "name": "add_calendar_event",
         "description": (
-            "Ajoute un événement dans le calendrier « Girlypop » de Léa (visible sur son iPhone). "
-            "Ne l'utilise que si Léa le demande ou a validé le planning proposé."
+            "Ajoute un événement dans un calendrier de Léa : son Google Agenda ('google') ou son "
+            "calendrier Apple « Girlypop » ('apple'). Ne l'utilise que si Léa le demande ou a validé "
+            "le planning proposé."
         ),
         "input_schema": {
             "type": "object",
@@ -168,6 +169,10 @@ CALENDAR_TOOLS: list[dict[str, Any]] = [
                 "start_time": TIME,
                 "duration_minutes": {"type": "integer"},
                 "description": {"type": "string"},
+                "calendar": {
+                    "type": "string",
+                    "description": "'google' ou 'apple' ; sans valeur, le calendrier par défaut",
+                },
             },
             "required": ["title", "day", "start_time", "duration_minutes"],
         },
@@ -240,7 +245,7 @@ class ToolExecutor:
         # La liste des outils envoyée à Claude dépend de ce qui est branché.
         calendar_tools = []
         if calendar:
-            # Sans calendrier Apple (ex : Google seul, en lecture), pas d'outil pour écrire.
+            # Sans calendrier modifiable (ex : seulement des liens iCal), pas d'outil pour écrire.
             calendar_tools = [t for t in CALENDAR_TOOLS if calendar.can_write or t["name"] != "add_calendar_event"]
         self.tools = TOOLS + calendar_tools + (NOTION_TOOLS if notion else [])
 
@@ -285,7 +290,7 @@ class ToolExecutor:
             case "add_calendar_event" if self._calendar:
                 result = self._calendar.create_event(
                     args["title"], _date(args["day"]), _time(args["start_time"]),
-                    args["duration_minutes"], args.get("description", ""),
+                    args["duration_minutes"], args.get("description", ""), args.get("calendar"),
                 )
             case "create_notion_page" if self._notion:
                 result = self._notion.create_page(

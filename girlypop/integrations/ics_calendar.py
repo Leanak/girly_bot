@@ -5,8 +5,8 @@ un simple lien qui renvoie tous les événements. Pas de compte développeur, pa
 on télécharge le fichier et on le lit avec `icalendar`.
 
 Limites :
-- LECTURE SEULE : Girlypop voit tes événements Google mais ne peut pas en ajouter
-  (elle écrit dans son calendrier Apple « Girlypop » si celui-ci est branché).
+- LECTURE SEULE : Girlypop voit tes événements mais ne peut pas en ajouter.
+  Pour écrire dans Google Agenda, utilise plutôt l'API (google_calendar.py).
 - Google met à jour ce fichier avec un peu de retard (souvent quelques minutes,
   parfois plus) : un événement tout juste créé peut mettre un moment à apparaître.
 

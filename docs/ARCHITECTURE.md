@@ -17,7 +17,7 @@ flowchart TB
         Discord["Serveurs Discord<br/>(ton téléphone)"]
         API["API Claude<br/>(serveurs d'Anthropic)"]
         ICloud["iCloud Calendrier<br/>(CalDAV)"]
-        Google["Google Agenda<br/>(lien iCal secret)"]
+        Google["Google Agenda<br/>(API + OAuth, ou lien iCal)"]
         NotionAPI["API Notion"]
     end
 
@@ -44,7 +44,7 @@ flowchart TB
     Agent -->|"outils calendrier / Notion"| Integ
     Sched -->|"« quels événements arrivent ? »"| Integ
     Integ <-->|HTTPS| ICloud
-    Integ -->|"HTTPS, lecture"| Google
+    Integ <-->|HTTPS| Google
     Integ <-->|HTTPS| NotionAPI
 ```
 

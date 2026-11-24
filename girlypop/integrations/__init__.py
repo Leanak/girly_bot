@@ -10,7 +10,8 @@ seulement à leur service (iCloud, Google, Notion) et renvoient des dict simples
 
 from girlypop.integrations.apple_calendar import AppleCalendar
 from girlypop.integrations.calendars import Calendars
+from girlypop.integrations.google_calendar import GoogleCalendar
 from girlypop.integrations.ics_calendar import IcsCalendar
 from girlypop.integrations.notion import NotionNotes
 
-__all__ = ["AppleCalendar", "Calendars", "IcsCalendar", "NotionNotes"]
+__all__ = ["AppleCalendar", "Calendars", "GoogleCalendar", "IcsCalendar", "NotionNotes"]

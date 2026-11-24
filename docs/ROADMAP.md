@@ -68,7 +68,9 @@ uniquement. Tu peux le révoquer à tout moment depuis la même page Apple.
 
 ## Étape 1 quater — Brancher Google Agenda (lecture seule)
 **But : qu'elle voie aussi tes événements Google.**
-Pas besoin de compte développeur : Google donne un lien secret par agenda.
+Pas besoin de compte développeur : Google donne un lien secret par agenda. C'est 2 minutes de
+réglage, mais en **lecture seule**. Pour qu'elle puisse aussi **ajouter** des événements, passe
+directement à l'étape 1 quinquies.
 1. Sur un **ordinateur**, ouvre <https://calendar.google.com> (ça ne marche pas depuis l'appli mobile).
 2. Roue dentée ⚙️ → **Paramètres**. Dans la colonne de gauche, sous « Paramètres de mes agendas »,
    clique sur l'agenda voulu.
@@ -82,8 +84,7 @@ Pas besoin de compte développeur : Google donne un lien secret par agenda.
 5. Relance : le terminal affiche `📅 Calendriers : Google perso` (et `Apple` s'il est branché aussi).
 
 À savoir :
-- **Lecture seule** : elle voit tes événements Google mais ne peut pas en créer. Les créneaux qu'elle
-  ajoute vont dans le calendrier Apple « Girlypop » (si tu l'as branché).
+- **Lecture seule** : elle voit tes événements Google mais ne peut pas en créer (voir l'étape suivante).
 - Google met à jour ce lien avec un peu de retard : un événement tout juste créé peut mettre un moment
   à apparaître.
 - 🔒 Ce lien donne accès à tout l'agenda sans mot de passe : uniquement dans `.env`. S'il fuit,
@@ -91,6 +92,56 @@ Pas besoin de compte développeur : Google donne un lien secret par agenda.
 - Ça marche aussi avec Outlook ou tout agenda qui donne un lien `.ics`.
 
 👉 Ce que tu apprends : télécharger un fichier par HTTP, le format iCalendar, les événements récurrents.
+
+## Étape 1 quinquies — Google Agenda en lecture ET écriture
+**But : qu'elle puisse ajouter des événements dans ton Google Agenda.**
+Il faut déclarer Girlypop comme une « appli » auprès de Google (gratuit, une seule fois, ~10 minutes).
+Google change souvent les noms des menus : si un intitulé diffère un peu, cherche le plus proche.
+
+1. **Créer le projet** : va sur <https://console.cloud.google.com>, connecte-toi avec ton compte Google,
+   accepte les conditions. En haut, sélecteur de projet → **Nouveau projet** → nom « Girlypop » → Créer.
+   Vérifie qu'il est bien sélectionné en haut de la page.
+2. **Activer l'API** : menu ☰ → *API et services* → **Bibliothèque** → cherche « Google Calendar API »
+   → **Activer**.
+3. **L'écran de consentement** : menu ☰ → **Google Auth Platform** (ou *API et services → Écran de
+   consentement OAuth*) → **Commencer** :
+   - nom de l'appli : `Girlypop`, e-mail d'assistance : le tien ;
+   - audience : **Externe** ;
+   - coordonnées : ton e-mail → accepte et **Créer**.
+4. **T'ajouter comme testeuse** : *Audience* → *Utilisateurs tests* → **Ajouter** → ton adresse Gmail.
+5. **Créer la clé de l'appli** : *Clients* → **Créer un client** → type **Application de bureau** →
+   nom `Girlypop` → Créer → **Télécharger le JSON**. Renomme le fichier en `google_credentials.json`
+   et mets-le à la racine du projet (à côté de `.env`). Il est ignoré par git.
+6. **Autoriser Girlypop** : dans le terminal, à la racine du projet :
+   ```bash
+   python -m girlypop.google_login
+   ```
+   Ton navigateur s'ouvre : choisis ton compte. Google affiche « Google n'a pas validé cette
+   application » : c'est normal, c'est TON appli. Clique sur *Continuer*, coche les accès à l'agenda,
+   valide. Le terminal affiche ✅ et crée `google_token.json` (ignoré par git).
+7. Dans `.env` :
+   ```
+   GOOGLE_CALENDAR=true
+   GOOGLE_WRITE_CALENDAR=primary     # ou le nom d'un agenda, ex : Girlypop
+   ```
+   Si tu avais mis tes liens Google dans `ICS_CALENDARS` (étape 1 quater), retire-les, sinon tu verras
+   chaque événement en double.
+8. Relance le bot : le terminal affiche `📅 Calendriers : Google (écriture : google)`. Essaie :
+   « ajoute yoga demain à 18h dans mon agenda ».
+
+À savoir :
+- ⏳ **Tant que l'appli est « en test », Google te redemande ton autorisation tous les 7 jours** (le bot
+  affichera une erreur Google). Pour l'éviter : *Google Auth Platform → Audience* → **Publier
+  l'application**. Ça ne la rend pas publique : seule toi as le fichier de clé. Ensuite, refais l'étape 6
+  une fois.
+- Astuce : crée un agenda « Girlypop » dans Google Agenda et mets `GOOGLE_WRITE_CALENDAR=Girlypop`.
+  Tu verras d'un coup d'œil ce qu'elle a ajouté, et tu pourras le masquer.
+- Elle peut lire et ajouter des événements, mais le code ne lui permet ni d'en modifier, ni d'en supprimer.
+- 🔒 Pour lui retirer l'accès : <https://myaccount.google.com/permissions> → Girlypop → Supprimer.
+- Si Apple est aussi branché, elle écrit par défaut dans Google, et dans Apple si tu le lui demandes.
+
+👉 Ce que tu apprends : OAuth (le « Se connecter avec Google »), les jetons d'accès et de renouvellement,
+une vraie API REST.
 
 ## Étape 2 — Jouer avec les objectifs et les tâches
 **But : comprendre la boucle d'agent en la regardant tourner.**
@@ -129,7 +180,6 @@ Pas besoin de compte développeur : Google donne un lien secret par agenda.
 - Sauvegarder régulièrement le fichier de base de données.
 
 ## Étape 7 — Pour aller plus loin (idées)
-- Écrire aussi dans Google Agenda (il faudra passer par l'API Google et OAuth).
 - Prof particulière : lui donner la recherche web de Claude pour citer des sources vérifiées dans les fiches.
 - Statistiques de la semaine (temps passé par objectif).
 - Mode focus / Pomodoro : « lance 25 minutes de focus » → elle te prévient à la fin.

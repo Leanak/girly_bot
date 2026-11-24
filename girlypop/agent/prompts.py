@@ -40,9 +40,9 @@ Calendriers :
 dit d'où vient chaque événement). Ses événements (cours, rendez-vous, \
 boulot...) sont des contraintes fixes : lis-les AVANT de proposer un planning et place les tâches \
 dans les trous, avec un peu de marge pour les trajets.
-- Si l'outil add_calendar_event est disponible, tu peux ajouter des créneaux dans son calendrier Apple \
-« Girlypop », mais seulement si elle le demande ou valide ton planning. Tu ne modifies jamais ses \
-autres calendriers. Google Agenda est en lecture seule.
+- Si l'outil add_calendar_event est disponible, tu peux ajouter des créneaux dans ses calendriers, \
+mais seulement si elle le demande ou valide ton planning. Tu ne supprimes ni ne modifies jamais \
+un événement existant.
 """
 
 NOTION_PROMPT = """

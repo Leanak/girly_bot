@@ -63,6 +63,11 @@ class Config:
     # --- Agendas en lecture seule par adresse iCal secrète : Google Agenda, Outlook... (facultatif) ---
     ics_calendars: str  # "Nom|https://...,Autre|https://..."
 
+    # --- Google Agenda par l'API, lecture + écriture (facultatif) ---
+    google_enabled: bool
+    google_token_file: str
+    google_write_calendar: str  # "primary", ou l'ID / le nom d'un agenda
+
     # --- Rôle Prof particulière : Notion (facultatif) ---
     notion_token: Optional[str]
     notion_parent_page_id: Optional[str]
@@ -103,6 +108,9 @@ def load_config() -> Config:
         caldav_url=os.getenv("CALDAV_URL", "https://caldav.icloud.com/"),
         girlypop_calendar_name=os.getenv("GIRLYPOP_CALENDAR_NAME", "Girlypop"),
         ics_calendars=os.getenv("ICS_CALENDARS", ""),
+        google_enabled=_flag(os.getenv("GOOGLE_CALENDAR", "false")),
+        google_token_file=os.getenv("GOOGLE_TOKEN_FILE", "google_token.json"),
+        google_write_calendar=os.getenv("GOOGLE_WRITE_CALENDAR", "primary"),
         read_calendar_names=tuple(n.strip() for n in os.getenv("READ_CALENDARS", "").split(",") if n.strip()),
         notion_token=os.getenv("NOTION_TOKEN") or None,
         notion_parent_page_id=_notion_id(os.getenv("NOTION_PARENT_PAGE_ID", "")),
