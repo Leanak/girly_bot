@@ -1,0 +1,12 @@
+# Interface : le bot Discord
+discord.py>=2.4,<3
+# Cerveau : le SDK officiel pour appeler Claude
+anthropic>=2.12,<3
+# Mémoire : l'ORM pour parler à SQLite
+SQLAlchemy>=2.0,<3
+# Réveil : tâches planifiées (brief du matin, rappels...)
+APScheduler>=3.10,<4
+# Lecture du fichier .env
+python-dotenv>=1.0
+# Tests
+pytest>=8
