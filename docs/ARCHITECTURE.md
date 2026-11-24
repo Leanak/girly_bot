@@ -17,6 +17,7 @@ flowchart TB
         Discord["Serveurs Discord<br/>(ton téléphone)"]
         API["API Claude<br/>(serveurs d'Anthropic)"]
         ICloud["iCloud Calendrier<br/>(CalDAV)"]
+        Google["Google Agenda<br/>(API + OAuth, ou lien iCal)"]
         NotionAPI["API Notion"]
     end
 
@@ -43,6 +44,7 @@ flowchart TB
     Agent -->|"outils calendrier / Notion"| Integ
     Sched -->|"« quels événements arrivent ? »"| Integ
     Integ <-->|HTTPS| ICloud
+    Integ <-->|HTTPS| Google
     Integ <-->|HTTPS| NotionAPI
 ```
 
@@ -59,7 +61,7 @@ flowchart TB
 
 | Rôle | Qui s'en occupe | Ce qu'il faut configurer |
 |---|---|---|
-| **Assistante de temps** : organiser tes jours et tes semaines | `agent/` (Claude planifie) + `core/planner.py` + `integrations/apple_calendar.py` | Calendrier Apple (facultatif mais conseillé) |
+| **Assistante de temps** : organiser tes jours et tes semaines | `agent/` (Claude planifie) + `core/planner.py` + `integrations/calendars.py` (Apple + Google) | Calendrier Apple et/ou Google Agenda (facultatifs mais conseillés) |
 | **Motivatrice** : rappels, « on passe à la suite ? », encouragements, bilan du soir | `scheduler/jobs.py` (+ `agent/prompts.py` pour le ton) | Rien, juste les horaires dans `.env` |
 | **Prof particulière** : fiches de cours dans Notion | `agent/` (Claude écrit le cours) + `integrations/notion.py` | Notion |
 

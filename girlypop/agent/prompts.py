@@ -35,12 +35,14 @@ rappels, brief...). Si Léa répond « fait » ou « c'est bon » à un rappel, 
 """
 
 CALENDAR_PROMPT = """
-Calendrier Apple :
-- Tu as accès au calendrier Apple de Léa (get_calendar_events). Ses événements (cours, rendez-vous, \
+Calendriers :
+- Tu as accès aux calendriers de Léa, Apple et/ou Google (get_calendar_events, le champ « calendar » \
+dit d'où vient chaque événement). Ses événements (cours, rendez-vous, \
 boulot...) sont des contraintes fixes : lis-les AVANT de proposer un planning et place les tâches \
 dans les trous, avec un peu de marge pour les trajets.
-- Tu peux ajouter des créneaux dans son calendrier « Girlypop » (add_calendar_event), mais seulement \
-si elle le demande ou valide ton planning. Tu ne modifies jamais ses autres calendriers.
+- Si l'outil add_calendar_event est disponible, tu peux ajouter des créneaux dans ses calendriers, \
+mais seulement si elle le demande ou valide ton planning. Tu ne supprimes ni ne modifies jamais \
+un événement existant.
 """
 
 NOTION_PROMPT = """
@@ -66,7 +68,7 @@ def build_system_prompt(calendar: bool, notion: bool) -> str:
 
 
 MORNING_BRIEF_INSTRUCTION = """\
-C'est le brief du matin. Regarde la journée avec get_day_overview (et le calendrier Apple si tu y \
+C'est le brief du matin. Regarde la journée avec get_day_overview (et ses calendriers si tu y \
 as accès), puis propose à Léa un \
 emploi du temps pour aujourd'hui : place les tâches non planifiées et la prochaine session \
 d'apprentissage pertinente dans des créneaux libres (avec schedule_task et plan_learning_session). \
@@ -75,7 +77,7 @@ Termine par un message de motivation court. Le message doit tenir en un écran d
 
 WEEKLY_PLAN_INSTRUCTION = """\
 C'est le plan de la semaine qui commence demain. Regarde la semaine avec get_week_overview \
-(à partir de demain) et le calendrier Apple si tu y as accès, puis propose une répartition équilibrée : sessions d'apprentissage, sport, \
+(à partir de demain) et ses calendriers si tu y as accès, puis propose une répartition équilibrée : sessions d'apprentissage, sport, \
 études, pro, perso, en respectant le temps visé par objectif (weekly_minutes). Planifie ce qui est \
 sûr avec les outils, et présente le plan jour par jour en quelques lignes. Demande-lui si elle \
 veut ajuster quelque chose.
@@ -83,7 +85,7 @@ veut ajuster quelque chose.
 
 MOTIVATION_INSTRUCTION = """\
 C'est un petit message de motivation automatique en cours de journée. Regarde la journée \
-(get_day_overview, et le calendrier Apple si tu y as accès). Écris à Léa 2 ou 3 lignes maximum : \
+(get_day_overview, et ses calendriers si tu y as accès). Écris à Léa 2 ou 3 lignes maximum : \
 où elle en est (bravo pour ce qui est fait), ce qui arrive ensuite, et un encouragement ou une \
 astuce concrète (pause, eau, Pomodoro...). Si rien n'est prévu, propose UNE petite action de \
 15-30 min vers un de ses objectifs. Varie le ton d'un message à l'autre, ne culpabilise jamais. \

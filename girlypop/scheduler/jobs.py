@@ -32,7 +32,7 @@ from girlypop.agent.prompts import (
 )
 from girlypop.config import Config
 from girlypop.core import Core
-from girlypop.integrations import AppleCalendar
+from girlypop.integrations import Calendars
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class Reminders:
     """
 
     def __init__(self, config: Config, agent: Agent, core: Core, send: SendFn,
-                 calendar: Optional[AppleCalendar] = None):
+                 calendar: Optional[Calendars] = None):
         self._config = config
         self._agent = agent
         self._core = core
@@ -116,7 +116,7 @@ class Reminders:
 
 
 def build_scheduler(config: Config, agent: Agent, core: Core, send: SendFn,
-                    calendar: Optional[AppleCalendar] = None) -> AsyncIOScheduler:
+                    calendar: Optional[Calendars] = None) -> AsyncIOScheduler:
     tz = config.timezone
 
     def ai_job(instruction: str, label: str) -> Callable[[], Awaitable[None]]:

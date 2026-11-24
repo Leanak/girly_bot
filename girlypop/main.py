@@ -14,7 +14,8 @@ from girlypop.bot import GirlypopBot
 from girlypop.config import load_config
 from girlypop.core import build_core
 from girlypop.db import init_db
-from girlypop.integrations import AppleCalendar, NotionNotes
+from girlypop.integrations import AppleCalendar, Calendars, GoogleCalendar, IcsCalendar, NotionNotes
+from girlypop.integrations.ics_calendar import parse_feeds
 from girlypop.scheduler import build_scheduler
 
 log = logging.getLogger("girlypop")
@@ -28,15 +29,21 @@ async def main() -> None:
     core = build_core(session_factory)                      # 3. services métier
 
     # 4. Intégrations : seulement si leurs identifiants sont dans .env.
-    calendar = None
+    apple = None
     if config.calendar_enabled:
-        calendar = AppleCalendar(
+        apple = AppleCalendar(
             config.icloud_username, config.icloud_app_password, config.timezone,
             url=config.caldav_url, own_calendar_name=config.girlypop_calendar_name,
             read_calendar_names=config.read_calendar_names,
         )
+    feeds = parse_feeds(config.ics_calendars)  # Google Agenda & co, en lecture seule
+    ics = IcsCalendar(feeds, config.timezone) if feeds else None
+    google = None
+    if config.google_enabled:  # Google par l'API : lecture + écriture (après `python -m girlypop.google_login`)
+        google = GoogleCalendar(config.google_token_file, config.timezone, config.google_write_calendar)
+    calendar = Calendars(apple, ics, google) if (apple or ics or google) else None
     notion = NotionNotes(config.notion_token, config.notion_parent_page_id) if config.notion_enabled else None
-    log.info("📅 Calendrier Apple : %s", "branché" if calendar else "non configuré")
+    log.info("📅 Calendriers : %s", calendar.describe() if calendar else "aucun configuré")
     log.info("📚 Notion : %s", "branché" if notion else "non configuré")
 
     agent = Agent(core, config.anthropic_api_key, config.claude_model, config.timezone,

@@ -35,6 +35,8 @@ def event_to_dict(component, calendar_name: str, tz: ZoneInfo) -> dict:
     """
     start = component.decoded("dtstart")
     end = component.decoded("dtend") if "dtend" in component else None
+    if end is None and "duration" in component:  # certains agendas donnent une durée au lieu d'une fin
+        end = start + component.decoded("duration")
     # Un événement « toute la journée » a une date sans heure.
     all_day = isinstance(start, date) and not isinstance(start, datetime)
     if all_day:

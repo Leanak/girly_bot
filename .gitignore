@@ -1,5 +1,11 @@
 # Secrets : ne JAMAIS commiter le vrai fichier .env
+# Google : la carte d'identité de ton appli et ton autorisation
+google_credentials.json
+google_token.json
 .env
+# Google : la carte d'identité de ton appli et ton autorisation
+google_credentials.json
+google_token.json
 
 # Base de données locale (tes données perso)
 *.db
