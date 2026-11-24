@@ -16,6 +16,8 @@ flowchart TB
     subgraph Ext["🌍 Le monde extérieur"]
         Discord["Serveurs Discord<br/>(ton téléphone)"]
         API["API Claude<br/>(serveurs d'Anthropic)"]
+        ICloud["iCloud Calendrier<br/>(CalDAV)"]
+        NotionAPI["API Notion"]
     end
 
     subgraph App["🖥️ Ton programme Python (un seul processus)"]
@@ -24,6 +26,7 @@ flowchart TB
         Core["<b>core/</b><br/>Couche métier<br/><i>Python pur</i>"]
         DB["<b>db/</b><br/>Couche données<br/><i>SQLAlchemy</i>"]
         Sched["<b>scheduler/</b><br/>Le réveil<br/><i>APScheduler</i>"]
+        Integ["<b>integrations/</b><br/>Calendrier Apple, Notion<br/><i>caldav, notion-client</i>"]
     end
 
     File[("girlypop.db<br/>fichier SQLite")]
@@ -37,6 +40,10 @@ flowchart TB
     Sched -->|"« fais le brief du matin »"| Agent
     Sched -->|"« quelles tâches arrivent ? »"| Core
     Sched -->|"envoie le message"| Bot
+    Agent -->|"outils calendrier / Notion"| Integ
+    Sched -->|"« quels événements arrivent ? »"| Integ
+    Integ <-->|HTTPS| ICloud
+    Integ <-->|HTTPS| NotionAPI
 ```
 
 | Couche | Dossier | Son métier | Ce qu'elle ne fait **pas** |
@@ -46,6 +53,15 @@ flowchart TB
 | **Cœur** | `girlypop/core/` | Les règles de ton organisation : objectifs, tâches, parcours, planning | Elle ne sait pas que Discord ou Claude existent |
 | **Données** | `girlypop/db/` | Décrire les tables et ouvrir la connexion à SQLite | Aucune logique métier |
 | **Scheduler** | `girlypop/scheduler/` | Réveiller l'application à heure fixe | Il ne sait pas *quoi* dire, il délègue |
+| **Intégrations** | `girlypop/integrations/` | Parler aux services extérieurs : lire/écrire le calendrier Apple, créer des pages Notion | Facultatives : sans identifiants dans `.env`, elles ne sont pas créées et Claude ne voit pas leurs outils |
+
+### Les trois rôles de Girlypop
+
+| Rôle | Qui s'en occupe | Ce qu'il faut configurer |
+|---|---|---|
+| **Assistante de temps** : organiser tes jours et tes semaines | `agent/` (Claude planifie) + `core/planner.py` + `integrations/apple_calendar.py` | Calendrier Apple (facultatif mais conseillé) |
+| **Motivatrice** : rappels, « on passe à la suite ? », encouragements, bilan du soir | `scheduler/jobs.py` (+ `agent/prompts.py` pour le ton) | Rien, juste les horaires dans `.env` |
+| **Prof particulière** : fiches de cours dans Notion | `agent/` (Claude écrit le cours) + `integrations/notion.py` | Notion |
 
 **Pourquoi c'est bien :**
 - Tu peux tester le cœur sans Discord ni IA (c'est ce que fait `tests/test_core.py`).
