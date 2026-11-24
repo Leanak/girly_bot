@@ -16,7 +16,7 @@ from datetime import date, time
 from typing import Any, Optional
 
 from girlypop.core import Core
-from girlypop.integrations import AppleCalendar, NotionNotes
+from girlypop.integrations import Calendars, NotionNotes
 
 DATE = {"type": "string", "description": "Date au format AAAA-MM-JJ"}
 TIME = {"type": "string", "description": "Heure au format HH:MM"}
@@ -145,7 +145,7 @@ CALENDAR_TOOLS: list[dict[str, Any]] = [
     {
         "name": "get_calendar_events",
         "description": (
-            "Lit les événements du calendrier Apple de Léa (cours, rendez-vous, sorties...) entre deux jours "
+            "Lit les événements des calendriers de Léa (Apple et Google) (cours, rendez-vous, sorties...) entre deux jours "
             "inclus. À consulter AVANT de proposer un planning, pour ne rien placer par-dessus."
         ),
         "input_schema": {
@@ -232,13 +232,17 @@ class ToolExecutor:
     """Fait le pont entre le nom d'un outil (texte envoyé par Claude) et la fonction du cœur."""
 
     def __init__(
-        self, core: Core, calendar: Optional[AppleCalendar] = None, notion: Optional[NotionNotes] = None
+        self, core: Core, calendar: Optional[Calendars] = None, notion: Optional[NotionNotes] = None
     ):
         self._core = core
         self._calendar = calendar
         self._notion = notion
         # La liste des outils envoyée à Claude dépend de ce qui est branché.
-        self.tools = TOOLS + (CALENDAR_TOOLS if calendar else []) + (NOTION_TOOLS if notion else [])
+        calendar_tools = []
+        if calendar:
+            # Sans calendrier Apple (ex : Google seul, en lecture), pas d'outil pour écrire.
+            calendar_tools = [t for t in CALENDAR_TOOLS if calendar.can_write or t["name"] != "add_calendar_event"]
+        self.tools = TOOLS + calendar_tools + (NOTION_TOOLS if notion else [])
 
     def run(self, name: str, args: dict) -> str:
         """Exécute l'outil et renvoie le résultat en JSON (du texte, que Claude sait lire)."""

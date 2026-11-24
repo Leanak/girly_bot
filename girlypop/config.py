@@ -60,6 +60,9 @@ class Config:
     girlypop_calendar_name: str  # le seul calendrier où elle écrit
     read_calendar_names: tuple[str, ...]  # vide = elle lit tous tes calendriers
 
+    # --- Agendas en lecture seule par adresse iCal secrète : Google Agenda, Outlook... (facultatif) ---
+    ics_calendars: str  # "Nom|https://...,Autre|https://..."
+
     # --- Rôle Prof particulière : Notion (facultatif) ---
     notion_token: Optional[str]
     notion_parent_page_id: Optional[str]
@@ -99,6 +102,7 @@ def load_config() -> Config:
         icloud_app_password=os.getenv("ICLOUD_APP_PASSWORD") or None,
         caldav_url=os.getenv("CALDAV_URL", "https://caldav.icloud.com/"),
         girlypop_calendar_name=os.getenv("GIRLYPOP_CALENDAR_NAME", "Girlypop"),
+        ics_calendars=os.getenv("ICS_CALENDARS", ""),
         read_calendar_names=tuple(n.strip() for n in os.getenv("READ_CALENDARS", "").split(",") if n.strip()),
         notion_token=os.getenv("NOTION_TOKEN") or None,
         notion_parent_page_id=_notion_id(os.getenv("NOTION_PARENT_PAGE_ID", "")),

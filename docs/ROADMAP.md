@@ -66,6 +66,32 @@ uniquement. Tu peux le révoquer à tout moment depuis la même page Apple.
 
 👉 Ce que tu apprends : les API REST, les tokens d'intégration, traduire un format (Markdown) en un autre (blocs Notion).
 
+## Étape 1 quater — Brancher Google Agenda (lecture seule)
+**But : qu'elle voie aussi tes événements Google.**
+Pas besoin de compte développeur : Google donne un lien secret par agenda.
+1. Sur un **ordinateur**, ouvre <https://calendar.google.com> (ça ne marche pas depuis l'appli mobile).
+2. Roue dentée ⚙️ → **Paramètres**. Dans la colonne de gauche, sous « Paramètres de mes agendas »,
+   clique sur l'agenda voulu.
+3. Descends jusqu'à **Intégrer l'agenda** → **Adresse secrète au format iCal** → icône copier.
+   (Si elle est grisée, c'est que ton administrateur l'a désactivée, par exemple sur un compte de fac.)
+4. Dans `.env`, une ligne avec un nom de ton choix, un `|`, puis le lien. Plusieurs agendas sont
+   séparés par des virgules :
+   ```
+   ICS_CALENDARS=Google perso|https://calendar.google.com/calendar/ical/.../basic.ics
+   ```
+5. Relance : le terminal affiche `📅 Calendriers : Google perso` (et `Apple` s'il est branché aussi).
+
+À savoir :
+- **Lecture seule** : elle voit tes événements Google mais ne peut pas en créer. Les créneaux qu'elle
+  ajoute vont dans le calendrier Apple « Girlypop » (si tu l'as branché).
+- Google met à jour ce lien avec un peu de retard : un événement tout juste créé peut mettre un moment
+  à apparaître.
+- 🔒 Ce lien donne accès à tout l'agenda sans mot de passe : uniquement dans `.env`. S'il fuit,
+  clique sur « Réinitialiser » sous l'adresse secrète dans les paramètres Google.
+- Ça marche aussi avec Outlook ou tout agenda qui donne un lien `.ics`.
+
+👉 Ce que tu apprends : télécharger un fichier par HTTP, le format iCalendar, les événements récurrents.
+
 ## Étape 2 — Jouer avec les objectifs et les tâches
 **But : comprendre la boucle d'agent en la regardant tourner.**
 - Donne-lui tes objectifs, ajoute des tâches, demande « qu'est-ce que j'ai demain ? ».
@@ -103,7 +129,7 @@ uniquement. Tu peux le révoquer à tout moment depuis la même page Apple.
 - Sauvegarder régulièrement le fichier de base de données.
 
 ## Étape 7 — Pour aller plus loin (idées)
-- Synchroniser avec Google Calendar.
+- Écrire aussi dans Google Agenda (il faudra passer par l'API Google et OAuth).
 - Prof particulière : lui donner la recherche web de Claude pour citer des sources vérifiées dans les fiches.
 - Statistiques de la semaine (temps passé par objectif).
 - Mode focus / Pomodoro : « lance 25 minutes de focus » → elle te prévient à la fin.

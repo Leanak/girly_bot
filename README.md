@@ -88,7 +88,7 @@ girly_bot/
 │   ├── core/               ← couche métier (objectifs, tâches, parcours, planning)
 │   ├── agent/              ← couche IA (Claude + outils)
 │   ├── bot/                ← couche Discord
-│   ├── integrations/       ← calendrier Apple (iCloud) et Notion, facultatifs
+│   ├── integrations/       ← calendriers Apple et Google, Notion (tous facultatifs)
 │   └── scheduler/          ← les réveils automatiques (matin, motivation, rappels, soir, semaine)
 └── tests/
     ├── test_core.py        ← le cœur, tout seul
@@ -100,7 +100,7 @@ girly_bot/
 
 | Rôle | Ce qu'elle fait | À brancher |
 |---|---|---|
-| ⏳ **Assistante de temps** | Organise tes journées et tes semaines selon tes objectifs, autour de tes événements Apple | Calendrier Apple ([étape 1 bis](docs/ROADMAP.md#étape-1-bis--brancher-le-calendrier-apple)) |
+| ⏳ **Assistante de temps** | Organise tes journées et tes semaines selon tes objectifs, autour de tes événements Apple | Calendrier Apple ([étape 1 bis](docs/ROADMAP.md#étape-1-bis--brancher-le-calendrier-apple)) et/ou Google Agenda ([étape 1 quater](docs/ROADMAP.md#étape-1-quater--brancher-google-agenda-lecture-seule)) |
 | 💪 **Motivatrice** | Rappels avant tes tâches et événements, « on passe à la suite ? » en fin de tâche, petits boosts à 10:30, 14:30 et 17:00, bilan du soir | Rien (horaires réglables dans `.env`) |
 | 🎓 **Prof particulière** | Crée des fiches de cours dans ton Notion sur les sujets que tu lui donnes | Notion ([étape 1 ter](docs/ROADMAP.md#étape-1-ter--brancher-notion)) |
 

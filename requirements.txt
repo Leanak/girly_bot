@@ -13,5 +13,7 @@ pytest>=8
 # Calendrier Apple (iCloud) : protocole CalDAV + lecture des événements .ics
 caldav>=3.0,<4
 icalendar>=6.0
+# Google Agenda & co : déplie les événements répétés (« tous les mardis ») d'un fichier .ics
+recurring-ical-events>=3.0,<4
 # Notion : le client Python de l'API Notion (projet communautaire très utilisé)
 notion-client>=2.2,<4

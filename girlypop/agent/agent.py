@@ -25,7 +25,7 @@ import anthropic
 from girlypop.agent.prompts import build_system_prompt
 from girlypop.agent.tools import NETWORK_TOOLS, ToolExecutor
 from girlypop.core import Core
-from girlypop.integrations import AppleCalendar, NotionNotes
+from girlypop.integrations import Calendars, NotionNotes
 
 log = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class Agent:
         api_key: str,
         model: str,
         timezone: ZoneInfo,
-        calendar: Optional[AppleCalendar] = None,
+        calendar: Optional[Calendars] = None,
         notion: Optional[NotionNotes] = None,
     ):
         # AsyncAnthropic : version « async » du client, pour ne pas bloquer Discord pendant qu'on attend Claude.

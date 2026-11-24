@@ -126,6 +126,7 @@ def test_calendar_tools_only_offered_when_configured(core):
 
     calls = []
     fake_cal = Obj(
+        can_write=True,
         list_events_for_days=lambda a, b: calls.append((a, b)) or [],
         create_event=lambda *args: calls.append(args) or {"ok": True},
     )
@@ -190,3 +191,61 @@ def _collect(sink):
     async def send(text):
         sink.append(text)
     return send
+
+
+# --- Google Agenda (lien iCal secret) ---------------------------------------------------------
+
+ICS = """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+BEGIN:VEVENT
+UID:yoga@google.com
+DTSTART:20261124T170000Z
+DTEND:20261124T180000Z
+RRULE:FREQ=WEEKLY;BYDAY=TU
+SUMMARY:Yoga
+END:VEVENT
+BEGIN:VEVENT
+UID:resto@google.com
+DTSTART:20261126T193000Z
+DURATION:PT2H
+SUMMARY:Resto avec Inès
+END:VEVENT
+END:VCALENDAR
+"""
+
+
+def test_ics_events_expand_recurrences_and_durations():
+    from girlypop.integrations.ics_calendar import events_between
+
+    cal = icalendar.Calendar.from_ical(ICS.replace("\n", "\r\n"))
+    events = events_between(cal, "Google perso", datetime(2026, 11, 24, tzinfo=PARIS),
+                            datetime(2026, 12, 2, tzinfo=PARIS), PARIS)
+    assert [(e["title"], e["start"]) for e in events] == [
+        ("Yoga", "2026-11-24 18:00"), ("Resto avec Inès", "2026-11-26 20:30"), ("Yoga", "2026-12-01 18:00")]
+    assert events[1]["end"] == "2026-11-26 22:30" and events[0]["calendar"] == "Google perso"
+
+
+def test_parse_feeds():
+    from girlypop.integrations.ics_calendar import parse_feeds
+
+    assert parse_feeds("Perso|https://a/x.ics, https://b/y.ics") == {"Perso": "https://a/x.ics",
+                                                                      "Agenda 2": "https://b/y.ics"}
+    assert parse_feeds("") == {}
+
+
+def test_google_only_means_no_write_tool(core):
+    from girlypop.integrations import Calendars
+
+    google = Obj(list_events_for_days=lambda a, b: [{"title": "B", "start": "2026-11-25 10:00"}],
+                 list_events=lambda s, e: [])
+    apple = Obj(list_events_for_days=lambda a, b: [{"title": "A", "start": "2026-11-24 09:00"}],
+                list_events=lambda s, e: [])
+
+    read_only = ToolExecutor(core, calendar=Calendars(ics=google))
+    names = {t["name"] for t in read_only.tools}
+    assert "get_calendar_events" in names and "add_calendar_event" not in names
+
+    both = Calendars(apple=apple, ics=google)
+    assert [e["title"] for e in both.list_events_for_days(date(2026, 11, 24), date(2026, 11, 30))] == ["A", "B"]
+    assert both.can_write
