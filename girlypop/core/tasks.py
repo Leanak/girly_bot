@@ -101,6 +101,32 @@ class TaskService:
                     due.append(task_to_dict(task))
             return due
 
+    def ending_between(self, after: datetime, until: datetime) -> list[dict]:
+        """Tâches du jour non faites dont l'heure de FIN tombe dans ]after, until].
+
+        Sert au message « c'est l'heure de passer à la suite » de la motivatrice.
+        """
+        ending = []
+        for task in self._timed_tasks(until.date()):
+            start = datetime.combine(task.day, task.start_time, tzinfo=until.tzinfo)
+            end = start + timedelta(minutes=task.duration_minutes)
+            if after < end <= until:
+                ending.append(task_to_dict(task))
+        return ending
+
+    def next_task(self, now: datetime) -> Optional[dict]:
+        """La prochaine tâche du jour qui n'a pas encore commencé (ou None)."""
+        upcoming = [
+            t for t in self._timed_tasks(now.date())
+            if datetime.combine(t.day, t.start_time, tzinfo=now.tzinfo) >= now
+        ]
+        return task_to_dict(min(upcoming, key=lambda t: t.start_time)) if upcoming else None
+
+    def _timed_tasks(self, day: date) -> list[Task]:
+        with self._sessions() as session:
+            query = select(Task).where(Task.done.is_(False), Task.day == day, Task.start_time.is_not(None))
+            return list(session.scalars(query))
+
     def mark_reminded(self, task_id: int) -> None:
         with self._sessions() as session:
             self._get(session, task_id).reminded = True
