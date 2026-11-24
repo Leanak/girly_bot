@@ -6,6 +6,9 @@ Deux parties :
 2. ToolExecutor : quand Claude demande un outil, on exécute la vraie fonction du cœur.
 
 Pour ajouter un outil : une méthode dans core/, une entrée dans TOOLS, une ligne dans ToolExecutor.
+
+Les outils du calendrier Apple et de Notion ne sont proposés à Claude QUE si
+l'intégration est configurée dans .env (sinon Claude ne sait même pas qu'ils existent).
 """
 
 import json
@@ -13,6 +16,7 @@ from datetime import date, time
 from typing import Any, Optional
 
 from girlypop.core import Core
+from girlypop.integrations import AppleCalendar, NotionNotes
 
 DATE = {"type": "string", "description": "Date au format AAAA-MM-JJ"}
 TIME = {"type": "string", "description": "Heure au format HH:MM"}
@@ -137,6 +141,85 @@ TOOLS: list[dict[str, Any]] = [
 ]
 
 
+CALENDAR_TOOLS: list[dict[str, Any]] = [
+    {
+        "name": "get_calendar_events",
+        "description": (
+            "Lit les événements du calendrier Apple de Léa (cours, rendez-vous, sorties...) entre deux jours "
+            "inclus. À consulter AVANT de proposer un planning, pour ne rien placer par-dessus."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"first_day": DATE, "last_day": DATE},
+            "required": ["first_day", "last_day"],
+        },
+    },
+    {
+        "name": "add_calendar_event",
+        "description": (
+            "Ajoute un événement dans le calendrier « Girlypop » de Léa (visible sur son iPhone). "
+            "Ne l'utilise que si Léa le demande ou a validé le planning proposé."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "day": DATE,
+                "start_time": TIME,
+                "duration_minutes": {"type": "integer"},
+                "description": {"type": "string"},
+            },
+            "required": ["title", "day", "start_time", "duration_minutes"],
+        },
+    },
+]
+
+NOTION_TOOLS: list[dict[str, Any]] = [
+    {
+        "name": "create_notion_page",
+        "description": (
+            "Crée une fiche de cours dans le Notion de Léa, sous sa page « Cours ». Le contenu est en "
+            "Markdown simple : # ## ### titres, - listes, 1. listes numérotées, - [ ] cases à cocher, "
+            "> citations, ```code```, --- séparateur, **gras**, *italique*, [lien](https://...). "
+            "Pas de tableaux ni d'images. Renvoie le lien de la page."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Titre de la fiche, ex : 'Le potentiel d'action'"},
+                "content": {"type": "string", "description": "Le cours complet, en Markdown simple"},
+                "emoji": {"type": "string", "description": "Un emoji pour l'icône de la page, ex : '🧠'"},
+                "parent_page_id": {
+                    "type": "string",
+                    "description": "Facultatif : ID d'une page existante sous laquelle ranger la fiche (ex : un sujet)",
+                },
+            },
+            "required": ["title", "content"],
+        },
+    },
+    {
+        "name": "append_to_notion_page",
+        "description": "Ajoute du contenu (Markdown simple) à la fin d'une page Notion existante.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"page_id": {"type": "string"}, "content": {"type": "string"}},
+            "required": ["page_id", "content"],
+        },
+    },
+    {
+        "name": "search_notion_pages",
+        "description": (
+            "Cherche parmi les fiches Notion déjà créées (par mot du titre). Sans query : liste les plus "
+            "récentes. Utile pour éviter les doublons ou retrouver une page à compléter."
+        ),
+        "input_schema": {"type": "object", "properties": {"query": {"type": "string"}}},
+    },
+]
+
+# Ces outils passent par Internet : l'agent les lance dans un thread pour ne pas bloquer Discord.
+NETWORK_TOOLS = {t["name"] for t in CALENDAR_TOOLS + NOTION_TOOLS}
+
+
 def _date(value: Optional[str]) -> Optional[date]:
     return date.fromisoformat(value) if value else None
 
@@ -148,8 +231,14 @@ def _time(value: Optional[str]) -> Optional[time]:
 class ToolExecutor:
     """Fait le pont entre le nom d'un outil (texte envoyé par Claude) et la fonction du cœur."""
 
-    def __init__(self, core: Core):
+    def __init__(
+        self, core: Core, calendar: Optional[AppleCalendar] = None, notion: Optional[NotionNotes] = None
+    ):
         self._core = core
+        self._calendar = calendar
+        self._notion = notion
+        # La liste des outils envoyée à Claude dépend de ce qui est branché.
+        self.tools = TOOLS + (CALENDAR_TOOLS if calendar else []) + (NOTION_TOOLS if notion else [])
 
     def run(self, name: str, args: dict) -> str:
         """Exécute l'outil et renvoie le résultat en JSON (du texte, que Claude sait lire)."""
@@ -187,6 +276,21 @@ class ToolExecutor:
                 result = c.planner.day_overview(_date(args["day"]))
             case "get_week_overview":
                 result = c.planner.week_overview(_date(args["start"]))
+            case "get_calendar_events" if self._calendar:
+                result = self._calendar.list_events_for_days(_date(args["first_day"]), _date(args["last_day"]))
+            case "add_calendar_event" if self._calendar:
+                result = self._calendar.create_event(
+                    args["title"], _date(args["day"]), _time(args["start_time"]),
+                    args["duration_minutes"], args.get("description", ""),
+                )
+            case "create_notion_page" if self._notion:
+                result = self._notion.create_page(
+                    args["title"], args["content"], args.get("emoji") or "📚", args.get("parent_page_id")
+                )
+            case "append_to_notion_page" if self._notion:
+                result = self._notion.append_to_page(args["page_id"], args["content"])
+            case "search_notion_pages" if self._notion:
+                result = self._notion.search_pages(args.get("query", ""))
             case _:
                 raise ValueError(f"Outil inconnu : {name}")
         return json.dumps(result, ensure_ascii=False)

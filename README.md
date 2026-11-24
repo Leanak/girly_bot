@@ -88,14 +88,28 @@ girly_bot/
 │   ├── core/               ← couche métier (objectifs, tâches, parcours, planning)
 │   ├── agent/              ← couche IA (Claude + outils)
 │   ├── bot/                ← couche Discord
-│   └── scheduler/          ← les réveils automatiques (matin, semaine, rappels)
+│   ├── integrations/       ← calendrier Apple (iCloud) et Notion, facultatifs
+│   └── scheduler/          ← les réveils automatiques (matin, motivation, rappels, soir, semaine)
 └── tests/
     ├── test_core.py        ← le cœur, tout seul
-    └── test_agent.py       ← la boucle d'agent, avec un faux Claude
+    ├── test_agent.py       ← la boucle d'agent, avec un faux Claude
+    └── test_roles.py       ← motivatrice, calendrier et Notion, sans réseau
 ```
+
+## Les trois rôles
+
+| Rôle | Ce qu'elle fait | À brancher |
+|---|---|---|
+| ⏳ **Assistante de temps** | Organise tes journées et tes semaines selon tes objectifs, autour de tes événements Apple | Calendrier Apple ([étape 1 bis](docs/ROADMAP.md#étape-1-bis--brancher-le-calendrier-apple)) |
+| 💪 **Motivatrice** | Rappels avant tes tâches et événements, « on passe à la suite ? » en fin de tâche, petits boosts à 10:30, 14:30 et 17:00, bilan du soir | Rien (horaires réglables dans `.env`) |
+| 🎓 **Prof particulière** | Crée des fiches de cours dans ton Notion sur les sujets que tu lui donnes | Notion ([étape 1 ter](docs/ROADMAP.md#étape-1-ter--brancher-notion)) |
+
+Exemples à lui écrire : « organise ma semaine », « je viens de finir », « fais-moi une fiche Notion
+sur le potentiel d'action », « complète ma fiche sur le crochet avec les points de base ».
 
 ## ⚠️ Secrets
 
-Ton token Discord et ta clé API Claude sont comme des mots de passe. Ils vont **uniquement** dans
+Ton token Discord, ta clé API Claude, ton mot de passe d'application Apple et ton token Notion sont
+comme des mots de passe. Ils vont **uniquement** dans
 `.env`, qui est listé dans `.gitignore` et ne part donc jamais sur GitHub. Si un jour tu en publies
-un par erreur, régénère-le immédiatement (sur le portail Discord ou la console Claude).
+un par erreur, régénère-le immédiatement (portail Discord, console Claude, appleid.apple.com ou réglages Notion).
